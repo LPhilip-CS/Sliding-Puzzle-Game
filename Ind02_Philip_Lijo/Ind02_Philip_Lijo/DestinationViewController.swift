@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 
-// Second ViewController
+// Second ViewController for a segue to show answer
 class DestinationViewController: UIViewController {
     
     override func viewDidLoad() {
@@ -16,7 +16,8 @@ class DestinationViewController: UIViewController {
     }
     //
     @IBAction func hideAnsTapped(_ sender: Any){
-        // Dissmissing the second ViewController when button tapped.
+        
+        // Dissmissing the second ViewController when Hide Answer button tapped.
         dismiss(animated: true, completion: nil)
     }
     

@@ -9,9 +9,11 @@ import UIKit
 
 class ViewController: UIViewController {
     
+    // MARK: - Global Variables
+    
     // Storing image tiles in an array
     var imageGrid:[UIImageView] = []
-    // Number of rows and columns (4x5) - can be customized
+    // Number of rows and columns (4x5) - *can be customized
     var column:Int = 4
     var row:Int = 5
     // Initializing floating-point scalar
@@ -23,6 +25,8 @@ class ViewController: UIViewController {
     var count:Int = 0
     
     
+    
+    // Override function
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -32,7 +36,7 @@ class ViewController: UIViewController {
     
     
     
-// MARK: - Shuffle
+    // MARK: - Shuffle Tiles
     
     // Portion of the code was referenced and modified from https://shmoopi.net/tutorials/slider-puzzle-ios-game-tutorial-2/ (2/2/22)
     // Main shuffle functions
@@ -107,7 +111,7 @@ class ViewController: UIViewController {
     
     
     
-// MARK: - Build Puzzle
+    // MARK: - Build Puzzle
     
     // Function to create puzzle
     func buildPuzzle(){
@@ -145,7 +149,7 @@ class ViewController: UIViewController {
 
     
     
-// MARK: - UITapGestureRecognizer
+    // MARK: - Move Tiles
     
     // Funtion to move tiles on tap within grid
     @objc func imageTapped (gesture: UITapGestureRecognizer){
@@ -191,7 +195,7 @@ class ViewController: UIViewController {
     
     
     
-// MARK: - Checking move and position
+    // MARK: - View Moves & Positions
     
     // Portion of the code was referenced and modified from https://www.geeksforgeeks.org/check-instance-15-puzzle-solvable/ (2/4/22)
     // Function to check the position of the tile in the grid
