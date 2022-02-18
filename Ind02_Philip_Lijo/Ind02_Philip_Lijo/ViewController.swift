@@ -9,44 +9,32 @@ import UIKit
 
 class ViewController: UIViewController {
     
-    // Storing tiles in an array
-    var imageViews:[UIImageView] = []
-    // Number of rows and columns can be customized
+    // Storing image tiles in an array
+    var imageGrid:[UIImageView] = []
+    // Number of rows and columns (4x5) - can be customized
+    var column:Int = 4
     var row:Int = 5
-    var col:Int = 4
     // Initializing floating-point scalar
     var width: CGFloat!
     var height: CGFloat!
     // Timer to send an action to auto shuffle the puzzle
-    var Timeauto: Timer!
+    var timer: Timer!
     // Initilizing count var
     var count:Int = 0
-    
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         
-        create_Puzzle()
+        buildPuzzle()
     }
     
     
     
-    // Shuffle puzzle on button tap
-    @IBAction func shuffleButton(_ sender: Any) {
-        autoShuffle()
-    }
+// MARK: - Shuffle
     
-    
-    
-    // Firing timer to use Shuffle fucntion
-    @objc func autoShuffle() {
-        Timeauto = Timer.scheduledTimer(timeInterval: 0.2, target: self, selector: #selector(shuffle), userInfo: nil, repeats: true)
-    }
-    
-    
-    
+    // Portion of the code was referenced and modified from https://shmoopi.net/tutorials/slider-puzzle-ios-game-tutorial-2/ (2/2/22)
     // Main shuffle functions
     @objc func shuffle() {
         // Keeps track of the number of tiles shuffled
@@ -54,11 +42,11 @@ class ViewController: UIViewController {
         // shuffle tiles randomly 25 times
         if count >= 25 {
             // Stopping timer
-            Timeauto.invalidate()
+            timer.invalidate()
         }
         
-        let move = width/CGFloat(col)
-        var imageViewsGrid = imageViews
+        let move = width/CGFloat(column)
+        var imageViewsGrid = imageGrid
         
         // Moving tiles in the Grid at random
         while imageViewsGrid.count > 0 {
@@ -68,32 +56,32 @@ class ViewController: UIViewController {
             let y:CGFloat = image.frame.origin.y
             
             // Shuffles tiles left
-            if checkMove(pos: CGPoint(x: x - move, y: y)) {
-                UIView.animate(withDuration: 0.2) {
+            if viewMove(pos: CGPoint(x: x - move, y: y)) {
+                UIView.animate(withDuration: 0.3) {
                     image.frame.origin.x -= move
                 }
                 return
             }
             
             // Shuffles tiles right
-            if checkMove(pos: CGPoint(x: x + move, y: y)) {
-                UIView.animate(withDuration: 0.2) {
+            if viewMove(pos: CGPoint(x: x + move, y: y)) {
+                UIView.animate(withDuration: 0.3) {
                     image.frame.origin.x += move
                 }
                 return
             }
             
             // Shuffles tiles down
-            if checkMove(pos: CGPoint(x: x, y: y + move)) {
-                UIView.animate(withDuration: 0.2) {
+            if viewMove(pos: CGPoint(x: x, y: y + move)) {
+                UIView.animate(withDuration: 0.3) {
                     image.frame.origin.y += move
                 }
                 return
             }
             
             // Shuffles tiles up
-            if checkMove(pos: CGPoint(x: x, y: y - move)) {
-                UIView.animate(withDuration: 0.2) {
+            if viewMove(pos: CGPoint(x: x, y: y - move)) {
+                UIView.animate(withDuration: 0.3) {
                     image.frame.origin.y -= move
                 }
                 return
@@ -106,24 +94,36 @@ class ViewController: UIViewController {
     }
     
     
+    // Firing timer to use Shuffle fucntion
+    @objc func autoShuffle() {
+        timer = Timer.scheduledTimer(timeInterval: 0.3, target: self, selector: #selector(shuffle), userInfo: nil, repeats: true)
+    }
+    
+    
+    // Shuffle puzzle on button tap
+    @IBAction func shuffleButton(_ sender: Any) {
+        autoShuffle()
+    }
+    
+    
+    
+// MARK: - Build Puzzle
     
     // Function to create puzzle
-    func create_Puzzle(){
+    func buildPuzzle(){
         var count:Int = 0
-        // Portion of the code was referenced and modified from https://shmoopi.net/tutorials/slider-puzzle-ios-game-tutorial-2/ (2/2/22)
         // confining image from assets to fit our grid frame
-        let image = UIImage(named: "turing")!.resizeImage(imagesize: self.view.frame.width, row: CGFloat(row), col: CGFloat(col))
+        let image = UIImage(named: "turing")!.resizeImage(imagesize: self.view.frame.width, row: CGFloat(row), col: CGFloat(column))
         width = image.size.width
         height = image.size.height
         let y = self.view.frame.height/2 - height/2
-        let imageConvert = image.cgImage
-        let sizeImage = width/CGFloat(col)
-        
+        let convertImage = image.cgImage
+        let sizeImage = width/CGFloat(column)
         // Splitting and cropping the images into rows and colums
         for i in 0...row - 1{
-            for j in 0...col - 1{
+            for j in 0...column - 1{
                 // Addding grid lines and positioning the grid frame with the image
-                let cropImage = imageConvert!.cropping(to: CGRect(x: CGFloat(j)*sizeImage, y:CGFloat(i)*sizeImage, width: sizeImage, height: sizeImage))
+                let cropImage = convertImage!.cropping(to: CGRect(x: CGFloat(j)*sizeImage, y:CGFloat(i)*sizeImage, width: sizeImage, height: sizeImage))
                 let imageView = UIImageView(image: UIImage(cgImage: cropImage!))
                 imageView.layer.borderWidth = 1
                 imageView.layer.borderColor = UIColor.black.cgColor
@@ -132,54 +132,57 @@ class ViewController: UIViewController {
                 imageView.tag = count
                 count += 1
                 // Adding a tap functionality to the tiles in the view
-                imageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(tapImage(gesture:))))
+                imageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(imageTapped(gesture:))))
                 imageView.isUserInteractionEnabled = true
-                imageViews.append(imageView)
+                imageGrid.append(imageView)
             }
         }
-        imageViews.last?.removeFromSuperview()
-        imageViews.removeLast()
+        
+        imageGrid.last?.removeFromSuperview()
+        imageGrid.removeLast()
         
     }
+
     
     
+// MARK: - UITapGestureRecognizer
     
     // Funtion to move tiles on tap within grid
-    @objc func tapImage (gesture: UITapGestureRecognizer){
+    @objc func imageTapped (gesture: UITapGestureRecognizer){
         let image = gesture.view as! UIImageView
         let x = image.frame.origin.x
         let y = image.frame.origin.y
-        let move = width/CGFloat(col)
-        print(image.tag)
-        print(checkOut(pos: CGPoint(x: x, y: y - move)))
+        let move = width/CGFloat(column)
         
+        print(image.tag)
+        print(viewPosition(pos: CGPoint(x: x, y: y - move)))
         // Tap to move tile left
-        if checkMove(pos: CGPoint(x: x - move, y: y)) {
-            UIView.animate(withDuration: 0.2) {
+        if viewMove(pos: CGPoint(x: x - move, y: y)) {
+            UIView.animate(withDuration: 0.3) {
                 image.frame.origin.x -= move
             }
             return
         }
         
         // Tap to move tile right
-        if checkMove(pos: CGPoint(x: x + move, y: y)) {
-            UIView.animate(withDuration: 0.2) {
+        if viewMove(pos: CGPoint(x: x + move, y: y)) {
+            UIView.animate(withDuration: 0.3) {
                 image.frame.origin.x += move
             }
             return
         }
         
         // Tap to move tile down
-        if checkMove(pos: CGPoint(x: x, y: y + move)) {
-            UIView.animate(withDuration: 0.2) {
+        if viewMove(pos: CGPoint(x: x, y: y + move)) {
+            UIView.animate(withDuration: 0.3) {
                 image.frame.origin.y += move
             }
             return
         }
         
         // Tap to move tile up
-        if checkMove(pos: CGPoint(x: x, y: y - move)) {
-            UIView.animate(withDuration: 0.2) {
+        if viewMove(pos: CGPoint(x: x, y: y - move)) {
+            UIView.animate(withDuration: 0.3) {
                 image.frame.origin.y -= move
             }
             return
@@ -187,35 +190,41 @@ class ViewController: UIViewController {
     }
     
     
-    // Portion of the code was referenced https://www.geeksforgeeks.org/check-instance-15-puzzle-solvable/ (2/4/22)
-    // Function to check the movement of the tiles within the grid
-    func checkMove(pos:CGPoint) -> Bool {
-        var count:[UIImageView] = []
-        count = imageViews.filter{$0.frame.origin.x - pos.x > -1 && $0.frame.origin.x - pos.x < 1 && $0.frame.origin.y - pos.y > -1 && $0.frame.origin.y - pos.y < 1}
-        if count == [] && checkOut(pos: pos) {
-            return true
-        }
-        return false
-    }
     
+// MARK: - Checking move and position
     
-    // Portion of the code was referenced https://www.openbookproject.net/py4fun/tiles/tiles.html (2/4/22)
+    // Portion of the code was referenced and modified from https://www.geeksforgeeks.org/check-instance-15-puzzle-solvable/ (2/4/22)
     // Function to check the position of the tile in the grid
-    func checkOut(pos:CGPoint) -> Bool {
-        let top:CGFloat = self.view.frame.height/2 - height/2 - 1
+    func viewPosition(pos:CGPoint) -> Bool {
         let left:CGFloat = -1
-        let right:CGFloat = width - width/CGFloat(col) + 1
-        let bottom:CGFloat = self.view.frame.height/2 + height/2 - width/CGFloat(col) + 1
-        if pos.x < left || pos.x > right || pos.y < top || pos.y > bottom{
+        let right:CGFloat = width - width/CGFloat(column) + 1
+        let down:CGFloat = self.view.frame.height/2 + height/2 - width/CGFloat(column) + 1
+        let up:CGFloat = self.view.frame.height/2 - height/2 - 1
+        
+        if pos.x < left || pos.x > right || pos.y < up || pos.y > down{
             return false
         }
         return true
     }
     
-
+    
+    // Portion of the code was referenced and modified from https://www.geeksforgeeks.org/check-instance-15-puzzle-solvable/ (2/4/22)
+    // Function to check the movement of the tiles within the grid
+    func viewMove(pos:CGPoint) -> Bool {
+        var count:[UIImageView] = []
+        count = imageGrid.filter{$0.frame.origin.x - pos.x > -1 && $0.frame.origin.x - pos.x < 1 && $0.frame.origin.y - pos.y > -1 && $0.frame.origin.y - pos.y < 1}
+        
+        if count == [] && viewPosition(pos: pos) {
+            return true
+        }
+        return false
+    }
+    
 }
 
 
+
+// MARK: - UIImage
 
 // Managing the image in the UIView to fit the constraints of the frame
 extension UIImage{
